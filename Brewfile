@@ -1,48 +1,31 @@
 # Taps
-tap 'homebrew/cask'
-tap 'homebrew/cask-fonts'
-tap 'homebrew/cask-versions'
-tap 'homebrew/bundle'
-tap 'nicoverbruggen/homebrew-cask'
+tap "homebrew/cask-fonts"
+tap "homebrew/cask-versions"
 
 # Binaries
-brew 'bash' # Latest Bash version
-brew 'coreutils' # Those that come with macOS are outdated
-brew 'git'
-brew 'grep'
-brew 'httpie'
-brew 'jq' # Used for spatie/visit
-brew 'mackup'
-brew 'mas' # Mac App Store manager
-brew 'pkg-config' # https://github.com/driesvints/dotfiles/issues/20
-
+brew "bash"
+brew "bat"
+brew "coreutils"
+brew "ffmpeg"
+brew "gh"
+brew "git"
+brew "grep"
+brew "httpie"
+brew "jq"
+brew "mackup"
+brew "svn"
 
 # Development
-brew 'mysql'
-brew 'nginx'
-brew 'kubernetes-cli'
-brew 'k9s'
-brew 'shellcheck'
-brew 'yubico-piv-tool'
-brew 'zsh-autosuggestions'
+brew "imagemagick"
+brew "yarn"
 
 # Apps
-cask 'iterm2'
-cask 'google-chrome'
-cask 'slack'
-cask 'visual-studio-code'
-cask 'whatsapp'
-cask 'zoom'
-cask 'intellij-idea'
-cask 'postman'
-cask 'opensc'
-cask 'dropbox'
-cask 'rectangle'
-cask 'docker'
+cask "google-chrome"
+cask "visual-studio-code"
 
-# Quicklook
-cask 'qlmarkdown'
-cask 'quicklook-json'
+# Quick Look
+cask "qlmarkdown"
+cask "quicklook-json"
 
 # Fonts
 cask 'font-lato'
