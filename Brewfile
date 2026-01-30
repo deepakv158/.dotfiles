@@ -1,6 +1,5 @@
 # Taps
-tap "homebrew/cask-fonts"
-tap "homebrew/cask-versions"
+# Note: homebrew/cask-fonts and homebrew/cask-versions are now built into Homebrew
 
 # Binaries
 brew "bash"
@@ -15,6 +14,7 @@ brew "jq"
 brew "mackup"
 brew "svn"
 
+
 # Development
 brew "imagemagick"
 brew "yarn"
@@ -22,10 +22,11 @@ brew "yarn"
 # Apps
 cask "google-chrome"
 cask "visual-studio-code"
+cask "iterm2"
 
 # Quick Look
 cask "qlmarkdown"
-cask "quicklook-json"
+# cask "quicklook-json" # Disabled by Homebrew on 2025-12-23
 
 # Fonts
 cask 'font-lato'
@@ -33,8 +34,8 @@ cask 'font-open-sans'
 cask 'font-roboto'
 cask 'font-source-code-pro-for-powerline'
 cask 'font-source-code-pro'
-cask 'font-source-sans-pro'
-cask 'font-source-serif-pro'
+cask 'font-source-sans-3'
+cask 'font-source-serif-4'
 
 # Mac App Store
 

@@ -30,7 +30,7 @@ brew bundle --file $DOTFILES/Brewfile
 #mysql -u root -e "ALTER USER root@localhost IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
 
 # Clone Github repositories
-$DOTFILES/clone.sh
+#$DOTFILES/clone.sh
 
 # Symlink the Mackup config file to the home directory
 ln -s $DOTFILES/.mackup.cfg $HOME/.mackup.cfg
