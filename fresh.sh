@@ -43,5 +43,5 @@ ln -s $DOTFILES/.gitconfig_global $HOME/.gitconfig
 #ln -s $DOTFILES/settings.xml $HOME/.m2/settings.xml
 
 # Set macOS preferences - we will run this last because this will reload the shell
-# Dont run this until i know exactly what is needed
-#source $DOTFILES/.macos
+echo "Setting macOS preferences..."
+source $DOTFILES/.macos
