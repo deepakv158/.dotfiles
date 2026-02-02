@@ -43,6 +43,7 @@ alias wip="commit wip"
 # Mine
 alias gspp='git stash && git pull -r && git stash pop'
 alias yk='pkill -9 ssh-agent;pkill -9 ssh-pkcs11-helper;ssh-add -k -s /usr/local/lib/opensc-pkcs11.so; ssh-add -l'
+alias pip='python3 -m pip'
 
 #Functions 
 # Refer to this for setup : https://confluence.oci.oraclecorp.com/pages/viewpage.action?spaceKey=OCAS&title=OCAS+Guide%3A+OB4+Overlay+Bastion+Access
@@ -87,6 +88,13 @@ function sftp_me() {
 # AI
 alias ai='sgpt'
 alias ais='sgpt -s'
+
+# OCI related
+alias token_auth='oci session authenticate --region us-ashburn-1 --tenancy-name bmc_operator_access --profile-name DEFAULT && echo "authentication_type=security_token\nuser=ocid1.user.oc1..aaaaaaaamv5eboctdqu2vmpke4otcxwvlf3bgk64bejuarhfwdbl2bgmwspq\n" >> ~/.oci/config'
+alias token_refresh='while true;do date;oci session refresh --profile DEFAULT||break;sleep 900;done'
+
+#Venv 
+alias venv='source $(pwd)/.venv/bin/activate'
 
 #Sourcing 
 #Not sure if i like autocomplete , will use autosuggestions for now

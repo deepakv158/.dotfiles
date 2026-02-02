@@ -42,3 +42,4 @@ cask 'font-source-serif-4'
 #Others
 # Install maven but without dependencies 
 # brew install --ignore-dependencies maven
+brew install uv

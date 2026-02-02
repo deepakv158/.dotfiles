@@ -45,3 +45,6 @@ ln -s $DOTFILES/.gitconfig_global $HOME/.gitconfig
 # Set macOS preferences - we will run this last because this will reload the shell
 echo "Setting macOS preferences..."
 source $DOTFILES/.macos
+
+#Create .secrets file in HOME folder if it doesnt exist 
+[ ! -d "$HOME/.secrets" ] && mkdir "$HOME/.secrets"
