@@ -77,8 +77,9 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
-# Add rancher desktop path 
+# Add rancher desktop path
 
+#export PATH="/Users/deviswan/.rd/bin/:$PATH"
 #export PATH="/Users/deviswan/.rd/bin/:$PATH"
 
 # User configuration
@@ -115,12 +116,9 @@ source $ZSH/oh-my-zsh.sh
 
 export JAVA_HOME="/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home"
 export PATH=$JAVA_HOME/bin:$PATH
+export PATH="$PATH:$HOME/.local/bin"
 
-# OCI related 
 
-alias token_auth='oci session authenticate --region us-ashburn-1 --tenancy-name bmc_operator_access --profile-name DEFAULT && echo "authentication_type=security_token\nuser=ocid1.user.oc1..aaaaaaaamv5eboctdqu2vmpke4otcxwvlf3bgk64bejuarhfwdbl2bgmwspq\n" >> ~/.oci/config'
-alias token_refresh='while true;do date;oci session refresh --profile DEFAULT||break;sleep 900;done'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 
-# Created by `pipx` on 2026-02-02 17:29:48
-export PATH="$PATH:/Users/deepak/.local/bin"
+# Load secret environment variables
+if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
