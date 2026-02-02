@@ -84,7 +84,11 @@ function sftp_me() {
     set +x
 }
 
+# AI
+alias ai='sgpt'
+alias ais='sgpt -s'
+
 #Sourcing 
 #Not sure if i like autocomplete , will use autosuggestions for now
 #source ~/Workspace/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-source ~/Workspace/zsh-autosuggestions/zsh-autosuggestions.zsh
+#source ~/Workspace/zsh-autosuggestions/zsh-autosuggestions.zsh
