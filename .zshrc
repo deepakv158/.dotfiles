@@ -4,7 +4,7 @@ export DOTFILES=$HOME/.dotfiles
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-# Path to your oh-my-zsh installation.
+# Path to your oh-my-zsh installation   .
 export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
@@ -79,7 +79,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Add rancher desktop path 
 
-export PATH="/Users/deviswan/.rd/bin/:$PATH"
+#export PATH="/Users/deviswan/.rd/bin/:$PATH"
 
 # User configuration
 
@@ -108,15 +108,19 @@ export PATH="/Users/deviswan/.rd/bin/:$PATH"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/deviswan/.rd/bin:$PATH"
+#export PATH="/Users/deviswan/.rd/bin:$PATH"
 ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
+#export PATH="$PATH:$HOME/.rvm/bin"
 
-export JAVA_HOME=$(/usr/libexec/java_home)
+export JAVA_HOME="/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home"
 export PATH=$JAVA_HOME/bin:$PATH
 
 # OCI related 
 
 alias token_auth='oci session authenticate --region us-ashburn-1 --tenancy-name bmc_operator_access --profile-name DEFAULT && echo "authentication_type=security_token\nuser=ocid1.user.oc1..aaaaaaaamv5eboctdqu2vmpke4otcxwvlf3bgk64bejuarhfwdbl2bgmwspq\n" >> ~/.oci/config'
-alias token_refresh='while true;do date;oci session refresh --profile DEFAULT||break;sleep 900;done'
+alias token_refresh='while true;do date;oci session refresh --profile DEFAULT||break;sleep 900;done'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+
+# Created by `pipx` on 2026-02-02 17:29:48
+export PATH="$PATH:/Users/deepak/.local/bin"
