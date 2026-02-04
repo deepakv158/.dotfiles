@@ -19,10 +19,6 @@ fi
 rm -rf $HOME/.zshrc
 ln -s $HOME/.dotfiles/.zshrc $HOME/.zshrc
 
-# Removes .zsh_history from $HOME (if it exists) and symlinks from the .dotfiles
-rm -rf $HOME/.zsh_history
-ln -s $HOME/.dotfiles/.zsh_history $HOME/.zsh_history
-
 # Update Homebrew recipes
 brew update
 
