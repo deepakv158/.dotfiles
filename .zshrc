@@ -123,31 +123,19 @@ export PATH="$PATH:$HOME/.local/bin"
 # Load secret environment variables
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
-# Agent config management - syncs CLAUDE.md, .clinerules across machines via dotfiles repo
+# Agent config management - syncs CLAUDE.md, .clinerules across machines via agent repo
 
 # One-time setup on a new machine
 agent-setup() {
-  local agent_path="$DOTFILES/agent"
-
-  # Check if agent folder exists in dotfiles
-  if [[ ! -d "$agent_path" ]]; then
-    echo "Error: agent folder not found in dotfiles at:"
-    echo "  $agent_path"
-    echo "Make sure dotfiles repo is cloned and has agent/ directory."
+  # Check if agent repo is cloned to ~/.agent
+  if [[ ! -d ~/.agent/.git ]]; then
+    echo "Clone the agent repo first:"
+    echo "  git clone git@github.com:deepakv158/agent.git ~/.agent"
     return 1
   fi
 
   # Create ~/.claude if needed
   mkdir -p ~/.claude
-
-  # Symlink ~/.agent to dotfiles (force update if pointing elsewhere)
-  if [[ -e ~/.agent && ! -L ~/.agent ]]; then
-    echo "Error: ~/.agent exists and is not a symlink. Remove it first."
-    return 1
-  else
-    ln -sfn "$agent_path" ~/.agent
-    echo "Linked ~/.agent -> $agent_path"
-  fi
 
   # Symlink global CLAUDE.md (force update if pointing elsewhere)
   if [[ -e ~/.claude/CLAUDE.md && ! -L ~/.claude/CLAUDE.md ]]; then
