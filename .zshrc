@@ -140,24 +140,20 @@ agent-setup() {
   # Create ~/.claude if needed
   mkdir -p ~/.claude
 
-  # Symlink ~/.agent to dotfiles
-  if [[ -L ~/.agent ]]; then
-    echo "~/.agent already linked"
-  elif [[ -e ~/.agent ]]; then
+  # Symlink ~/.agent to dotfiles (force update if pointing elsewhere)
+  if [[ -e ~/.agent && ! -L ~/.agent ]]; then
     echo "Error: ~/.agent exists and is not a symlink. Remove it first."
     return 1
   else
-    ln -s "$agent_path" ~/.agent
+    ln -sfn "$agent_path" ~/.agent
     echo "Linked ~/.agent -> $agent_path"
   fi
 
-  # Symlink global CLAUDE.md
-  if [[ -L ~/.claude/CLAUDE.md ]]; then
-    echo "~/.claude/CLAUDE.md already linked"
-  elif [[ -e ~/.claude/CLAUDE.md ]]; then
-    echo "Warning: ~/.claude/CLAUDE.md exists. Back it up and remove to link."
+  # Symlink global CLAUDE.md (force update if pointing elsewhere)
+  if [[ -e ~/.claude/CLAUDE.md && ! -L ~/.claude/CLAUDE.md ]]; then
+    echo "Warning: ~/.claude/CLAUDE.md is a real file. Back it up and remove to link."
   else
-    ln -s ~/.agent/global/CLAUDE.md ~/.claude/CLAUDE.md
+    ln -sf ~/.agent/global/CLAUDE.md ~/.claude/CLAUDE.md
     echo "Linked ~/.claude/CLAUDE.md -> ~/.agent/global/CLAUDE.md"
   fi
 
