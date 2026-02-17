@@ -127,11 +127,10 @@ if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
 # One-time setup on a new machine
 agent-setup() {
-  # Check if agent repo is cloned to ~/.agent
+  # Clone agent repo if not present
   if [[ ! -d ~/.agent/.git ]]; then
-    echo "Clone the agent repo first:"
-    echo "  git clone git@github.com:deepakv158/agent.git ~/.agent"
-    return 1
+    echo "Cloning agent repo to ~/.agent..."
+    git clone git@github.com:deepakv158/agent.git ~/.agent || return 1
   fi
 
   # Create ~/.claude if needed
@@ -146,6 +145,17 @@ agent-setup() {
   fi
 
   echo "Done. Run 'agent-init' in any project to link project configs."
+}
+
+# Sync agent state (pull, commit changes, push)
+agent-sync() {
+  (
+    cd ~/.agent || return 1
+    git pull --rebase
+    git add -A
+    git diff --cached --quiet || git commit -m "sync $(date '+%Y-%m-%d %H:%M')"
+    git push
+  )
 }
 
 # Per-project setup
