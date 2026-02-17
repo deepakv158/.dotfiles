@@ -124,53 +124,52 @@ export PATH="$PATH:$HOME/.local/bin"
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
 # Agent config management - syncs CLAUDE.md, .clinerules across machines via agent repo
-
-# One-time setup on a new machine
+# Usage: run `agent-setup` to clone repo, link configs, and sync
 agent-setup() {
-  # Clone agent repo if not present
+  local changed=0
+
+  # 1. Clone if ~/.agent doesn't exist
   if [[ ! -d ~/.agent/.git ]]; then
-    echo "Cloning agent repo to ~/.agent..."
+    echo "Cloning agent repo..."
     git clone git@github.com:deepakv158/agent.git ~/.agent || return 1
+    changed=1
   fi
 
-  # Create ~/.claude if needed
+  # 2. Link global CLAUDE.md if not already linked correctly
   mkdir -p ~/.claude
-
-  # Symlink global CLAUDE.md (force update if pointing elsewhere)
-  if [[ -e ~/.claude/CLAUDE.md && ! -L ~/.claude/CLAUDE.md ]]; then
-    echo "Warning: ~/.claude/CLAUDE.md is a real file. Back it up and remove to link."
-  else
+  if [[ ! -L ~/.claude/CLAUDE.md || $(readlink ~/.claude/CLAUDE.md) != *".agent/global/CLAUDE.md" ]]; then
     ln -sf ~/.agent/global/CLAUDE.md ~/.claude/CLAUDE.md
-    echo "Linked ~/.claude/CLAUDE.md -> ~/.agent/global/CLAUDE.md"
+    echo "Linked ~/.claude/CLAUDE.md"
+    changed=1
   fi
 
-  echo "Done. Run 'agent-init' in any project to link project configs."
-}
+  # 3. Link project configs if in a git project (and not already linked)
+  if [[ -d .git && $PWD != "$HOME/.agent" ]]; then
+    local project=$(basename $PWD)
+    local agent_dir=~/.agent/projects/$project
+    mkdir -p "$agent_dir"
+    [[ ! -f "$agent_dir/CLAUDE.md" ]] && touch "$agent_dir/CLAUDE.md"
+    [[ ! -f "$agent_dir/.clinerules" ]] && touch "$agent_dir/.clinerules"
 
-# Sync agent state (pull, commit changes, push)
-agent-sync() {
+    if [[ ! -L ./CLAUDE.md || $(readlink ./CLAUDE.md) != *"$agent_dir/CLAUDE.md" ]]; then
+      ln -sf "$agent_dir/CLAUDE.md" ./CLAUDE.md
+      ln -sf "$agent_dir/.clinerules" ./.clinerules
+      echo "Linked project configs for $project"
+      changed=1
+    fi
+  fi
+
+  # 4. Sync with remote
   (
-    cd ~/.agent || return 1
+    cd ~/.agent
     git pull --rebase
     git add -A
-    git diff --cached --quiet || git commit -m "sync $(date '+%Y-%m-%d %H:%M')"
-    git push
+    if ! git diff --cached --quiet; then
+      git commit -m "sync $(date '+%Y-%m-%d %H:%M')"
+      changed=1
+    fi
+    git push 2>/dev/null
   )
-}
 
-# Per-project setup
-agent-init() {
-  local project=$(basename $PWD)
-  local agent_dir=~/.agent/projects/$project
-
-  # Create project folder and empty configs if needed
-  mkdir -p "$agent_dir"
-  [[ ! -f "$agent_dir/CLAUDE.md" ]] && touch "$agent_dir/CLAUDE.md"
-  [[ ! -f "$agent_dir/.clinerules" ]] && touch "$agent_dir/.clinerules"
-
-  # Symlink into project (-sf replaces existing)
-  ln -sf "$agent_dir/CLAUDE.md" ./CLAUDE.md
-  ln -sf "$agent_dir/.clinerules" ./.clinerules
-
-  echo "Linked to ~/.agent/projects/$project/"
+  [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
 }
