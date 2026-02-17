@@ -88,6 +88,7 @@ function sftp_me() {
 # AI
 alias ai='sgpt'
 alias ais='sgpt -s'
+alias repl='sgpt --repl temp'
 
 # OCI related
 alias token_auth='oci session authenticate --region us-ashburn-1 --tenancy-name bmc_operator_access --profile-name DEFAULT && echo "authentication_type=security_token\nuser=ocid1.user.oc1..aaaaaaaamv5eboctdqu2vmpke4otcxwvlf3bgk64bejuarhfwdbl2bgmwspq\n" >> ~/.oci/config'
