@@ -122,3 +122,61 @@ export PATH="$PATH:$HOME/.local/bin"
 
 # Load secret environment variables
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
+
+# Agent config management - syncs CLAUDE.md, .clinerules across machines via dotfiles repo
+
+# One-time setup on a new machine
+agent-setup() {
+  local agent_path="$DOTFILES/agent"
+
+  # Check if agent folder exists in dotfiles
+  if [[ ! -d "$agent_path" ]]; then
+    echo "Error: agent folder not found in dotfiles at:"
+    echo "  $agent_path"
+    echo "Make sure dotfiles repo is cloned and has agent/ directory."
+    return 1
+  fi
+
+  # Create ~/.claude if needed
+  mkdir -p ~/.claude
+
+  # Symlink ~/.agent to dotfiles
+  if [[ -L ~/.agent ]]; then
+    echo "~/.agent already linked"
+  elif [[ -e ~/.agent ]]; then
+    echo "Error: ~/.agent exists and is not a symlink. Remove it first."
+    return 1
+  else
+    ln -s "$agent_path" ~/.agent
+    echo "Linked ~/.agent -> $agent_path"
+  fi
+
+  # Symlink global CLAUDE.md
+  if [[ -L ~/.claude/CLAUDE.md ]]; then
+    echo "~/.claude/CLAUDE.md already linked"
+  elif [[ -e ~/.claude/CLAUDE.md ]]; then
+    echo "Warning: ~/.claude/CLAUDE.md exists. Back it up and remove to link."
+  else
+    ln -s ~/.agent/global/CLAUDE.md ~/.claude/CLAUDE.md
+    echo "Linked ~/.claude/CLAUDE.md -> ~/.agent/global/CLAUDE.md"
+  fi
+
+  echo "Done. Run 'agent-init' in any project to link project configs."
+}
+
+# Per-project setup
+agent-init() {
+  local project=$(basename $PWD)
+  local agent_dir=~/.agent/projects/$project
+
+  # Create project folder and empty configs if needed
+  mkdir -p "$agent_dir"
+  [[ ! -f "$agent_dir/CLAUDE.md" ]] && touch "$agent_dir/CLAUDE.md"
+  [[ ! -f "$agent_dir/.clinerules" ]] && touch "$agent_dir/.clinerules"
+
+  # Symlink into project (-sf replaces existing)
+  ln -sf "$agent_dir/CLAUDE.md" ./CLAUDE.md
+  ln -sf "$agent_dir/.clinerules" ./.clinerules
+
+  echo "Linked to ~/.agent/projects/$project/"
+}
