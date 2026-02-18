@@ -44,19 +44,20 @@ alias wip="commit wip"
 alias gspp='git stash && git pull -r && git stash pop'
 alias yk='pkill -9 ssh-agent;pkill -9 ssh-pkcs11-helper;ssh-add -k -s /usr/local/lib/opensc-pkcs11.so; ssh-add -l'
 alias pip='python3 -m pip'
+alias scm-ssh-add='SSH_AUTH_SOCK=~/.ssh/scm-agent.sock ssh-add'
 
 #Functions 
 
 # Refer to this for setup : https://confluence.oraclecorp.com/confluence/display/DLCSCM/DevOps+SCM+Mac+Setup
 
  reload-ssh() {
+    cp /Library/OpenSC/lib/opensc-pkcs11.so /usr/local/lib/opensc-pkcs11-local.so
+    scm-ssh-add -D
     ssh-add -e /usr/local/lib/opensc-pkcs11.so >> /dev/null
     if [ $? -gt 0 ]; then
         echo "Failed to remove previous card"
     fi
     ssh-add -s /usr/local/lib/opensc-pkcs11.so
-
-    alias scm-ssh-add='SSH_AUTH_SOCK=~/.ssh/scm-agent.sock ssh-add'
     scm-ssh-add -s /usr/local/lib/opensc-pkcs11.so
  }
 
