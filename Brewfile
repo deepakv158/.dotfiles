@@ -43,3 +43,6 @@ cask 'font-source-serif-4'
 # Install maven but without dependencies 
 # brew install --ignore-dependencies maven
 brew install uv
+# Security tools
+brew "opensc"
+brew "yubico-piv-tool"
