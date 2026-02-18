@@ -79,6 +79,35 @@ You can tweak the shell theme, the Oh My Zsh settings and much more. Go through 
 
 Enjoy your own Dotfiles!
 
+## AI Coding Assistants
+
+This dotfiles setup includes integration for AI coding assistants (Claude Code, Cline). Configuration is stored in a separate [agent repo](https://github.com/deepakv158/agent) and synced across machines.
+
+### Setup
+
+Two shell commands are defined in `.zshrc`:
+
+**`agent-bootstrap`** — Run once per machine to set up:
+- Clones the agent repo to `~/.agent/`
+- Links global rules for Claude Code (`~/.claude/CLAUDE.md`)
+- Links global rules for Cline (`~/Documents/Cline/Rules/`)
+
+**`agent-init`** — Run in any project directory to link project-specific rules:
+- Creates `.claude/rules/` symlink
+- Creates `.clinerules/` symlink
+- Both point to `~/.agent/projects/<project-name>/rules/`
+
+### How It Works
+
+Rules are stored in `~/.agent/` and symlinked to where each tool expects them:
+
+| Tool        | Global Rules                    | Project Rules      |
+|-------------|--------------------------------|--------------------|
+| Claude Code | `~/.claude/CLAUDE.md`          | `.claude/rules/`   |
+| Cline       | `~/Documents/Cline/Rules/`     | `.clinerules/`     |
+
+Edit rules in one place, both tools read them. Changes sync across machines via git.
+
 ## Thanks To...
 
 I first got the idea for starting this project by visiting the [GitHub does dotfiles](https://dotfiles.github.io/) project. Both [Zach Holman](https://github.com/holman/dotfiles) and [Mathias Bynens](https://github.com/mathiasbynens/dotfiles) were great sources of inspiration. [Sourabh Bajaj](https://twitter.com/sb2nov/)'s [Mac OS X Setup Guide](http://sourabhbajaj.com/mac-setup/) proved to be invaluable. Thanks to [@subnixr](https://github.com/subnixr) for [his awesome Zsh theme](https://github.com/subnixr/minimal)! Thanks to [Caneco](https://twitter.com/caneco) for the header in this readme. And lastly, I'd like to thank [Emma Fabre](https://twitter.com/anahkiasen) for [her excellent presentation on Homebrew](https://speakerdeck.com/anahkiasen/a-storm-homebrewin) which made me migrate a lot to a [`Brewfile`](./Brewfile) and [Mackup](https://github.com/lra/mackup).
