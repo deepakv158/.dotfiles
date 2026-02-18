@@ -123,9 +123,14 @@ export PATH="$PATH:$HOME/.local/bin"
 # Load secret environment variables
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
-# Agent config management - syncs CLAUDE.md, .clinerules across machines via agent repo
-# Usage: run `agent-setup` to clone repo, link configs, and sync
-agent-setup() {
+# Agent config management - syncs AI tool configs across machines via agent repo
+# Uses directory-based rules that work with Claude (.claude/rules/) and Cline (.clinerules/)
+#
+# Commands:
+#   agent-bootstrap  - Initial setup: clone repo, link global configs, sync
+#   agent-init       - Link current directory as a project
+
+agent-bootstrap() {
   local changed=0
 
   # 1. Clone if ~/.agent doesn't exist
@@ -135,31 +140,28 @@ agent-setup() {
     changed=1
   fi
 
-  # 2. Link global CLAUDE.md if not already linked correctly
+  # 2. Set up global rules directory
+  mkdir -p ~/.agent/global/rules
+  [[ ! -f ~/.agent/global/rules/main.md ]] && touch ~/.agent/global/rules/main.md
+
+  # Claude global: ~/.claude/CLAUDE.md -> single file
   mkdir -p ~/.claude
-  if [[ ! -L ~/.claude/CLAUDE.md || $(readlink ~/.claude/CLAUDE.md) != *".agent/global/CLAUDE.md" ]]; then
-    ln -sf ~/.agent/global/CLAUDE.md ~/.claude/CLAUDE.md
-    echo "Linked ~/.claude/CLAUDE.md"
+  if [[ ! -L ~/.claude/CLAUDE.md || $(readlink ~/.claude/CLAUDE.md) != *".agent/global/rules/main.md" ]]; then
+    ln -sf ~/.agent/global/rules/main.md ~/.claude/CLAUDE.md
+    echo "Linked ~/.claude/CLAUDE.md -> global rules"
     changed=1
   fi
 
-  # 3. Link project configs if in a git project (and not already linked)
-  if [[ -d .git && $PWD != "$HOME/.agent" ]]; then
-    local project=$(basename $PWD)
-    local agent_dir=~/.agent/projects/$project
-    mkdir -p "$agent_dir"
-    [[ ! -f "$agent_dir/CLAUDE.md" ]] && touch "$agent_dir/CLAUDE.md"
-    [[ ! -f "$agent_dir/.clinerules" ]] && touch "$agent_dir/.clinerules"
-
-    if [[ ! -L ./CLAUDE.md || $(readlink ./CLAUDE.md) != *"$agent_dir/CLAUDE.md" ]]; then
-      ln -sf "$agent_dir/CLAUDE.md" ./CLAUDE.md
-      ln -sf "$agent_dir/.clinerules" ./.clinerules
-      echo "Linked project configs for $project"
-      changed=1
-    fi
+  # Cline global: ~/Documents/Cline/Rules/ -> directory
+  mkdir -p ~/Documents/Cline
+  if [[ ! -L ~/Documents/Cline/Rules || $(readlink ~/Documents/Cline/Rules) != *".agent/global/rules" ]]; then
+    rm -rf ~/Documents/Cline/Rules 2>/dev/null
+    ln -sf ~/.agent/global/rules ~/Documents/Cline/Rules
+    echo "Linked ~/Documents/Cline/Rules -> global rules"
+    changed=1
   fi
 
-  # 4. Sync with remote
+  # 3. Sync with remote
   (
     cd ~/.agent
     git pull --rebase
@@ -172,6 +174,42 @@ agent-setup() {
   )
 
   [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
+}
+
+agent-init() {
+  # Ensure bootstrap has been run
+  if [[ ! -d ~/.agent/.git ]]; then
+    echo "Run agent-bootstrap first"
+    return 1
+  fi
+
+  local project=$(basename $PWD)
+  local rules_dir=~/.agent/projects/$project/rules
+  mkdir -p "$rules_dir"
+  [[ ! -f "$rules_dir/main.md" ]] && touch "$rules_dir/main.md"
+
+  # Claude: .claude/rules/ -> directory
+  mkdir -p .claude
+  rm -rf .claude/rules 2>/dev/null
+  ln -sf "$rules_dir" .claude/rules
+  echo "Linked .claude/rules/"
+
+  # Cline: .clinerules/ -> directory
+  rm -rf .clinerules 2>/dev/null
+  ln -sf "$rules_dir" .clinerules
+  echo "Linked .clinerules/"
+
+  # Sync
+  (
+    cd ~/.agent
+    git add -A
+    if ! git diff --cached --quiet; then
+      git commit -m "init $project $(date '+%Y-%m-%d %H:%M')"
+      git push 2>/dev/null
+    fi
+  )
+
+  echo "Initialized $project"
 }
 
 # Function to enable proxy settings (run after VPN connection)
