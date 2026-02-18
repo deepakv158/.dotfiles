@@ -174,15 +174,39 @@ agent-setup() {
   [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
 }
 
-export http_proxy=http://www-proxy-sjc.oraclecorp.com:80      # most commonly used
-export https_proxy=$http_proxy
-export HTTP_PROXY=$http_proxy
-export HTTPS_PROXY=$http_proxy
-export proxy_rsync=$http_proxy
-export PROXY_RSYNC=$http_proxy
-export ftp_proxy=$http_proxy
-export FTP_PROXY=$http_proxy
-export all_proxy=$http_proxy
-export ALL_PROXY=$http_proxy
-export no_proxy="localhost,127.0.0.1,10.0.0.0/8,.oracle.com,.oraclecorp.com,.oraclevcn.com"
-export NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,.oracle.com,.oraclecorp.com,.oraclevcn.com"
+#export http_proxy=http://www-proxy-sjc.oraclecorp.com:80      # most commonly used
+#export https_proxy=$http_proxy
+#export HTTP_PROXY=$http_proxy
+#export HTTPS_PROXY=$http_proxy
+#export proxy_rsync=$http_proxy
+#export PROXY_RSYNC=$http_proxy
+#export ftp_proxy=$http_proxy
+#export FTP_PROXY=$http_proxy
+#export all_proxy=$http_proxy
+#export ALL_PROXY=$http_proxy
+#export no_proxy="localhost,127.0.0.1,10.0.0.0/8,.oracle.com,.oraclecorp.com,.oraclevcn.com"
+#export NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,.oracle.com,.oraclecorp.com,.oraclevcn.com"
+# Function to enable proxy settings (run after VPN connection)
+enable_proxy() {
+    export http_proxy="http://www-proxy-sjc.oraclecorp.com:80"
+    export https_proxy="http://www-proxy-sjc.oraclecorp.com:80"
+    export HTTP_PROXY="http://www-proxy-sjc.oraclecorp.com:80"
+    export HTTPS_PROXY="http://www-proxy-sjc.oraclecorp.com:80"
+    export proxy_rsync="http://www-proxy-sjc.oraclecorp.com:80"
+    export PROXY_RSYNC="http://www-proxy-sjc.oraclecorp.com:80"
+    export ftp_proxy="http://www-proxy-sjc.oraclecorp.com:80"
+    export FTP_PROXY="http://www-proxy-sjc.oraclecorp.com:80"
+    export all_proxy="http://www-proxy-sjc.oraclecorp.com:80"
+    export ALL_PROXY="http://www-proxy-sjc.oraclecorp.com:80"
+    export no_proxy="localhost,127.0.0.1,10.0.0.0/8,.oracle.com,.oraclecorp.com,.oraclevcn.com"
+    export NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,.oracle.com,.oraclecorp.com,.oraclevcn.com"
+    echo "Proxy environment variables enabled."
+}
+
+# Function to disable proxy settings (run after VPN disconnect)
+disable_proxy() {
+    unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY \
+          proxy_rsync PROXY_RSYNC ftp_proxy FTP_PROXY all_proxy ALL_PROXY \
+          no_proxy NO_PROXY
+    echo "Proxy environment variables cleared."
+}
