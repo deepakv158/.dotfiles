@@ -46,3 +46,5 @@ brew install uv
 # Security tools
 brew "opensc"
 brew "yubico-piv-tool"
+brew "tree"
+brew "codex"

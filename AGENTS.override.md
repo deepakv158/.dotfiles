@@ -1,0 +1,1 @@
+/Users/deepakviswanath/.agent/projects/.dotfiles/rules/main.md

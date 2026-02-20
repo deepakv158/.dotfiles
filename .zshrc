@@ -161,6 +161,14 @@ agent-bootstrap() {
     changed=1
   fi
 
+  # Codex global: ~/.codex/AGENTS.override.md -> single file
+  mkdir -p ~/.codex
+  if [[ ! -L ~/.codex/AGENTS.override.md || $(readlink ~/.codex/AGENTS.override.md) != *".agent/global/rules/main.md" ]]; then
+    ln -sf ~/.agent/global/rules/main.md ~/.codex/AGENTS.override.md
+    echo "Linked ~/.codex/AGENTS.override.md -> global rules"
+    changed=1
+  fi
+
   # 3. Sync with remote
   (
     cd ~/.agent
@@ -176,6 +184,18 @@ agent-bootstrap() {
   [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
 }
 
+syncRepo(){
+   # 3. Sync with remote
+  (
+    git pull --rebase
+    git add -A
+    if ! git diff --cached --quiet; then
+      git commit -m "sync $(date '+%Y-%m-%d %H:%M')"
+      changed=1
+    fi
+    git push 2>/dev/null
+  )
+}
 agent-init() {
   # Ensure bootstrap has been run
   if [[ ! -d ~/.agent/.git ]]; then
@@ -199,14 +219,15 @@ agent-init() {
   ln -sf "$rules_dir" .clinerules
   echo "Linked .clinerules/"
 
+  # Codex: .codex/ -> directory
+  rm -rf AGENTS.override.md 2>/dev/null
+  ln -sf "$rules_dir/main.md" AGENTS.override.md
+  echo "Linked codex rules"
+
   # Sync
   (
     cd ~/.agent
-    git add -A
-    if ! git diff --cached --quiet; then
-      git commit -m "init $project $(date '+%Y-%m-%d %H:%M')"
-      git push 2>/dev/null
-    fi
+    syncRepo
   )
 
   echo "Initialized $project"
