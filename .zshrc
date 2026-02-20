@@ -119,7 +119,6 @@ export PATH=$JAVA_HOME/bin:$PATH
 export PATH="$PATH:$HOME/.local/bin"
 
 
-
 # Load secret environment variables
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
@@ -170,16 +169,8 @@ agent-bootstrap() {
   fi
 
   # 3. Sync with remote
-  (
     cd ~/.agent
-    git pull --rebase
-    git add -A
-    if ! git diff --cached --quiet; then
-      git commit -m "sync $(date '+%Y-%m-%d %H:%M')"
-      changed=1
-    fi
-    git push 2>/dev/null
-  )
+    sycnRepo
 
   [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
 }
@@ -225,10 +216,8 @@ agent-init() {
   echo "Linked codex rules"
 
   # Sync
-  (
     cd ~/.agent
     syncRepo
-  )
 
   echo "Initialized $project"
 }
