@@ -169,8 +169,10 @@ agent-bootstrap() {
   fi
 
   # 3. Sync with remote
-    cd ~/.agent
-    sycnRepo
+  (
+    cd ~/.agent || return 1
+    syncRepo
+  )
 
   [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
 }
@@ -216,8 +218,10 @@ agent-init() {
   echo "Linked codex rules"
 
   # Sync
-    cd ~/.agent
+  (
+    cd ~/.agent || return 1
     syncRepo
+  )
 
   echo "Initialized $project"
 }
@@ -245,4 +249,130 @@ disable_proxy() {
           proxy_rsync PROXY_RSYNC ftp_proxy FTP_PROXY all_proxy ALL_PROXY \
           no_proxy NO_PROXY
     echo "Proxy environment variables cleared."
+}
+
+# OCI Bastion helpers for the DB port-forward session.
+# Designed to be run step-by-step when debugging.
+#
+# Quick start (creates session, exports BASTION_DB_SESSION_ID + BASTION_DB_SSH, starts tunnel):
+#   bastion_db
+#
+# Step-by-step:
+#   sid=$(bastion_db_create)
+#   bastion_db_ssh_template "$sid"
+#   bastion_db_ssh_cmd "$sid"   # exports BASTION_DB_SSH
+#   bastion_db_start             # runs ssh
+
+_bastion_db_require() {
+  command -v oci >/dev/null || { echo "oci CLI not found"; return 1; }
+  command -v jq  >/dev/null || { echo "jq not found (needed to parse OCI output)"; return 1; }
+}
+
+_bastion_db_defaults() {
+  # Using env overrides makes this reusable without editing the function.
+  : "${BASTION_DB_BASTION_ID:=ocid1.bastion.oc1.iad.amaaaaaaxwbm3baawcmoicohv3e5vqklkaaltji4zt5ueqgzj45zxfn4dn7q}"
+  : "${BASTION_DB_TARGET_IP:=100.91.1.156}"
+  : "${BASTION_DB_TARGET_PORT:=1522}"
+  : "${BASTION_DB_LOCAL_PORT:=1522}"
+  : "${BASTION_DB_PUBKEY:=$HOME/.ssh/id_ed25519.pub}"
+  : "${BASTION_DB_PRIKEY:=$HOME/.ssh/id_ed25519}"
+  : "${BASTION_DB_TTL:=10800}"
+}
+
+bastion_db_create() {
+  _bastion_db_require || return 1
+  _bastion_db_defaults
+
+  local name="Session-$(date +%Y%m%d-%H%M)"
+  local create_json session_id
+
+  create_json=$(oci bastion session create-port-forwarding \
+    --bastion-id "$BASTION_DB_BASTION_ID" \
+    --target-private-ip "$BASTION_DB_TARGET_IP" \
+    --target-port "$BASTION_DB_TARGET_PORT" \
+    --display-name "$name" \
+    --key-type PUB \
+    --ssh-public-key-file "$BASTION_DB_PUBKEY" \
+    --session-ttl "$BASTION_DB_TTL" \
+    --auth security_token \
+    --wait-for-state SUCCEEDED \
+    --wait-for-state FAILED \
+    --wait-interval-seconds 5 \
+    --max-wait-seconds 600 \
+    --output json) || return 1
+
+  # NOTE: create-port-forwarding returns a work request; the session OCID is in resources[].identifier
+  # Avoid relying on hyphenated keys like "entity-type".
+  session_id=$(echo "$create_json" \
+    | jq -r '.data.resources[]?.identifier // empty' \
+    | command grep -m1 '^ocid1\.bastionsession\.')
+
+  # Fallback for older/newer CLI shapes (if it ever returns the session directly)
+  [[ -z "$session_id" || "$session_id" == "null" ]] && session_id=$(echo "$create_json" | jq -r '.data.id')
+
+  [[ -z "$session_id" || "$session_id" == "null" ]] && {
+    echo "Could not parse session OCID from OCI output.";
+    echo "Raw output:";
+    echo "$create_json";
+    return 1;
+  }
+
+  export BASTION_DB_SESSION_ID="$session_id"
+  echo "$session_id"
+}
+
+bastion_db_ssh_template() {
+  _bastion_db_require || return 1
+  local session_id="${1:-$BASTION_DB_SESSION_ID}"
+  [[ -z "$session_id" ]] && { echo "Usage: bastion_db_ssh_template <session_ocid>"; return 1; }
+
+  oci bastion session get \
+    --session-id "$session_id" \
+    --auth security_token \
+    --query 'data."ssh-metadata".command' \
+    --raw-output
+}
+
+bastion_db_ssh_cmd() {
+  _bastion_db_require || return 1
+  _bastion_db_defaults
+
+  local session_id="${1:-$BASTION_DB_SESSION_ID}"
+  [[ -z "$session_id" ]] && { echo "Usage: bastion_db_ssh_cmd <session_ocid>"; return 1; }
+
+  local ssh_cmd final_cmd
+  ssh_cmd=$(bastion_db_ssh_template "$session_id") || return 1
+  [[ -z "$ssh_cmd" || "$ssh_cmd" == "null" ]] && { echo "Could not fetch ssh command for session: $session_id"; return 1; }
+
+  # Substitute common placeholders OCI uses in its templated command.
+  # If OCI returns a command without these placeholders, sed will be a no-op.
+  final_cmd=$(echo "$ssh_cmd" | sed \
+    -e "s#<privateKey>#$BASTION_DB_PRIKEY#g" \
+    -e "s#<localPort>#$BASTION_DB_LOCAL_PORT#g")
+
+  export BASTION_DB_SSH="$final_cmd"
+  echo "$final_cmd"
+}
+
+bastion_db_start() {
+  local cmd="${BASTION_DB_SSH}"
+  [[ -z "$cmd" ]] && { echo "BASTION_DB_SSH is empty. Run: bastion_db_ssh_cmd <session_ocid>"; return 1; }
+  [[ "$cmd" != ssh\ * ]] && { echo "BASTION_DB_SSH doesn't look like an ssh command:"; echo "$cmd"; return 1; }
+  echo "Starting tunnel... (Ctrl-C to stop)"
+  eval "$cmd"
+}
+
+bastion_db() {
+  # Convenience wrapper: bastion_db [--no-start]
+  local no_start=0
+  [[ "$1" == "--no-start" ]] && no_start=1
+
+  local sid
+  sid=$(bastion_db_create) || return 1
+  echo "Session: $sid"
+  bastion_db_ssh_cmd "$sid" >/dev/null || return 1
+  echo "Command saved to \$BASTION_DB_SSH"
+  echo "$BASTION_DB_SSH"
+  [[ $no_start -eq 1 ]] && return 0
+  bastion_db_start
 }
