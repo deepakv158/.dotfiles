@@ -123,6 +123,16 @@ export PATH="$PATH:$HOME/.local/bin"
 # Load secret environment variables
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
+
+# Brain vault symlinks — auto-create on startup if OneDrive is available
+_BRAIN_SRC="$HOME/Library/CloudStorage/OneDrive-Personal/brain"
+if [[ -d "$_BRAIN_SRC" ]]; then
+  [[ ! -L "$HOME/OneDrive" ]] && ln -sf "$HOME/Library/CloudStorage/OneDrive-Personal" "$HOME/OneDrive"
+  [[ ! -L "$HOME/brain" ]]    && ln -sf "$_BRAIN_SRC" "$HOME/brain"
+  [[ ! -L "$HOME/.agent" ]]   && ln -sf "$HOME/brain" "$HOME/.agent"
+fi
+unset _BRAIN_SRC
+
 # Agent config management - syncs AI tool configs across machines via agent repo
 # Uses directory-based rules that work with Claude (.claude/rules/) and Cline (.clinerules/)
 #
