@@ -125,7 +125,7 @@ if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
 
 # Brain vault symlinks — auto-create on startup if OneDrive is available
-_BRAIN_SRC="$HOME/Library/CloudStorage/OneDrive-Personal/brain"
+_BRAIN_SRC="$HOME/Library/CloudStorage/OneDrive-Personal/Apps/remotely-save/Brain"
 if [[ -d "$_BRAIN_SRC" ]]; then
   [[ ! -L "$HOME/OneDrive" ]] && ln -sf "$HOME/Library/CloudStorage/OneDrive-Personal" "$HOME/OneDrive"
   [[ ! -L "$HOME/brain" ]]    && ln -sf "$_BRAIN_SRC" "$HOME/brain"
