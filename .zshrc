@@ -124,103 +124,11 @@ export PATH="$PATH:$HOME/.local/bin"
 if [[ -f "$HOME/.secrets" ]]; then source "$HOME/.secrets"; fi
 
 
-# Brain vault symlinks — auto-create on startup if OneDrive is available
-_BRAIN_SRC="$HOME/Library/CloudStorage/OneDrive-Personal/Apps/remotely-save/Brain"
-if [[ -d "$_BRAIN_SRC" ]]; then
-  [[ ! -L "$HOME/OneDrive" ]] && ln -sf "$HOME/Library/CloudStorage/OneDrive-Personal" "$HOME/OneDrive"
-  [[ ! -L "$HOME/brain" ]]    && ln -sf "$_BRAIN_SRC" "$HOME/brain"
-  [[ ! -L "$HOME/.agent" ]]   && ln -sf "$HOME/brain" "$HOME/.agent"
-fi
-unset _BRAIN_SRC
+# OneDrive convenience symlink
+[[ ! -L "$HOME/OneDrive" ]] && [[ -d "$HOME/Library/CloudStorage/OneDrive-Personal" ]] && \
+  ln -sf "$HOME/Library/CloudStorage/OneDrive-Personal" "$HOME/OneDrive"
 
-# Agent config management - syncs AI tool configs across machines via agent repo
-# Uses directory-based rules that work with Claude (.claude/rules/) and Cline (.clinerules/)
-#
-# Commands:
-#   agent-bootstrap  - Initial setup: clone repo, link global configs, sync
-#   agent-init       - Link current directory as a project
-
-agent-bootstrap() {
-  local changed=0
-
-  # 1. Clone if ~/.agent doesn't exist
-  if [[ ! -d ~/.agent/.git ]]; then
-    echo "Cloning agent repo..."
-    git clone git@github.com:deepakv158/agent.git ~/.agent || return 1
-    changed=1
-  fi
-
-  # 2. Set up global rules directory
-  mkdir -p ~/.agent/global/rules
-  [[ ! -f ~/.agent/global/rules/main.md ]] && touch ~/.agent/global/rules/main.md
-
-  # Claude global: ~/.claude/CLAUDE.md -> single file
-  mkdir -p ~/.claude
-  if [[ ! -L ~/.claude/CLAUDE.md || $(readlink ~/.claude/CLAUDE.md) != *".agent/global/rules/main.md" ]]; then
-    ln -sf ~/.agent/global/rules/main.md ~/.claude/CLAUDE.md
-    echo "Linked ~/.claude/CLAUDE.md -> global rules"
-    changed=1
-  fi
-
-  # Cline global: ~/Documents/Cline/Rules/ -> directory
-  mkdir -p ~/Documents/Cline
-  if [[ ! -L ~/Documents/Cline/Rules || $(readlink ~/Documents/Cline/Rules) != *".agent/global/rules" ]]; then
-    rm -rf ~/Documents/Cline/Rules 2>/dev/null
-    ln -sf ~/.agent/global/rules ~/Documents/Cline/Rules
-    echo "Linked ~/Documents/Cline/Rules -> global rules"
-    changed=1
-  fi
-
-  # 3. Sync with remote
-  (
-    cd ~/.agent
-    git pull --rebase
-    git add -A
-    if ! git diff --cached --quiet; then
-      git commit -m "sync $(date '+%Y-%m-%d %H:%M')"
-      changed=1
-    fi
-    git push 2>/dev/null
-  )
-
-  [[ $changed -eq 0 ]] && echo "Already set up, nothing to do."
-}
-
-agent-init() {
-  # Ensure bootstrap has been run
-  if [[ ! -d ~/.agent/.git ]]; then
-    echo "Run agent-bootstrap first"
-    return 1
-  fi
-
-  local project=$(basename $PWD)
-  local rules_dir=~/.agent/projects/$project/rules
-  mkdir -p "$rules_dir"
-  [[ ! -f "$rules_dir/main.md" ]] && touch "$rules_dir/main.md"
-
-  # Claude: .claude/rules/ -> directory
-  mkdir -p .claude
-  rm -rf .claude/rules 2>/dev/null
-  ln -sf "$rules_dir" .claude/rules
-  echo "Linked .claude/rules/"
-
-  # Cline: .clinerules/ -> directory
-  rm -rf .clinerules 2>/dev/null
-  ln -sf "$rules_dir" .clinerules
-  echo "Linked .clinerules/"
-
-  # Sync
-  (
-    cd ~/.agent
-    git add -A
-    if ! git diff --cached --quiet; then
-      git commit -m "init $project $(date '+%Y-%m-%d %H:%M')"
-      git push 2>/dev/null
-    fi
-  )
-
-  echo "Initialized $project"
-}
+# See ~/.agent/README.md for new machine setup
 
 # Function to enable proxy settings (run after VPN connection)
 enable_proxy() {

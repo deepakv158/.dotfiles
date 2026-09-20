@@ -19,6 +19,13 @@ brew "svn"
 brew "imagemagick"
 brew "yarn"
 
+# Terminal / Dev Environment
+brew "tmux"
+brew "neovim"
+brew "ripgrep"
+brew "fd"
+brew "lazygit"
+
 # Apps
 cask "google-chrome"
 cask "visual-studio-code"
