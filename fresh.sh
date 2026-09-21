@@ -42,6 +42,11 @@ ln -s $DOTFILES/.gitconfig_global $HOME/.gitconfig
 # Symlink MAVEN settings , backed up using mackup so commeting it out, storing in this repo as a backup
 #ln -s $DOTFILES/settings.xml $HOME/.m2/settings.xml
 
+# Self-managed tools (not via brew)
+if test ! $(which no-mistakes); then
+  curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh | sh
+fi
+
 # Set macOS preferences - we will run this last because this will reload the shell
 echo "Setting macOS preferences..."
 source $DOTFILES/.macos
